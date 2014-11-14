@@ -92,14 +92,10 @@ Each transition requires a hash table lookup using the source states and the inp
 
 There are a few possible ways of breaking this task into sub tasks.
 
-#1 horizontally splitting "ABAB" into "AB" and "AB" (like chunking and parmap)
+1. horizontally splitting "ABAB" into "AB" and "AB" (like chunking and parmap)
 However, the computation is more like a fold rather than a map. Not sure whether it is possible.
 
-#2 virtically split the task if there are more than one source NFA states. If we do this naively, we will have exponential growth of the sparks, as we do not do any deduplication on the output target states. In LeftToRightP2, we try to only split once and not split subsequently. However this is no performance gain as 90% of the spark are GC'ed.
-
-#3 virtically split the task into 3 actors, each actors in charge of one NFA state, this will distribute the lookup and the duplicate steps. However this has a potential blow up of the number of actors. We haven't tried to implement this approach yet.
-
-#4 apply parMap for each lookup and dedup, e.g. in consuming the first label B. Instead of 
+2. apply parMap for each lookup and dedup?, e.g. in consuming the first label B. Instead of 
 ```
 map (\state -> lookup state 'B' hashTable) [1,2]
 ```
@@ -107,5 +103,17 @@ we do
 ```
 parMap (\state -> lookup state 'B' hashTable) [1,2]
 ```
-However this leads to too many sparks created and 90% of them are garbage collected. See LeftToRightP3
+However this leads to too many sparks created and 90% of them are garbage collected. See LeftToRightP3 for details
+
+SPARKS: 34788298 (152093 converted, 0 overflowed, 0 dud, 34469817 GC'd, 166388 fizzled)
+
+3. vertically split the task if there are more than one source NFA states. If we do this naively, we will have exponential growth of the sparks, as we do not do any deduplication on the output target states. In LeftToRightP2, we try to only split once and not split subsequently. However there is no performance gain as 90% of the spark are GC'ed.
+
+ SPARKS: 634836 (13585 converted, 0 overflowed, 0 dud, 605166 GC'd, 16085 fizzled)
+
+4. vertically split the task if there are more than one source NFA states. The split subtask/spark are run in paralell in a fixed steps. After all steps, the result will be merged and deduped. If there are still input labels remains, split again. As in LeftToRightP, there is no performance gain as 90% of the spark are GC'ed.
+
+  SPARKS: 1858941 (12086 converted, 0 overflowed, 0 dud, 1830321 GC'd, 16534 fizzled)
+
+5. vertically split the task into 3 actors, each actors in charge of one NFA state, this will distribute the lookup and the duplicate steps. However this has a potential blow up of the number of actors. We haven't tried to implement this approach yet.
 
