@@ -1,19 +1,18 @@
 > {- By Kenny Zhuo Ming Lu and Martin Sulzmann, 2009, BSD License -}
 
-Paralellizing patMatchesIntStatePdPat0' using the par Monad
+A bytestring implementation of reg exp pattern matching using partial derivative
+This algorithm exploits the extension of partial derivative of regular expression patterns.
+This algorithm proceeds by scanning the input word from left to right until we reach 
+an emptiable pattern and the input word is fully consumed.
 
-1) cnt is par'ed
-2) the lookupPdPat0' are par'ed
 
-outcome: too many sparks, 90% of which are GC'ed, no improvement
-
- SPARKS: 34788298 (152093 converted, 0 overflowed, 0 dud, 34469817 GC'd, 166388 fizzled)
+eliminating the list of env update functions, by applying them on the flight
 
 > {-# LANGUAGE GADTs, MultiParamTypeClasses, FunctionalDependencies,
 >     FlexibleInstances, TypeSynonymInstances, FlexibleContexts #-} 
 
 
-> module Text.Regex.PDeriv.ByteString.LeftToRightP3
+> module Text.Regex.PDeriv.ByteString.LeftToRightS
 >     ( Regex
 >     , CompOption(..)
 >     , ExecOption(..)
@@ -29,17 +28,13 @@ outcome: too many sparks, 90% of which are GC'ed, no improvement
 > -- import GHC.Int
 > import qualified Data.IntMap as IM
 > import qualified Data.ByteString.Char8 as S
-> import Control.Parallel.Strategies hiding (parMap)
-> import Control.Seq as Seq
 > import Control.DeepSeq
-> import Control.Parallel
-
 
 > import System.IO.Unsafe (unsafePerformIO)
 
 > import Text.Regex.Base(RegexOptions(..))
 
-
+> import Control.Parallel.Strategies
 > import Text.Regex.PDeriv.RE
 > import Text.Regex.PDeriv.Pretty (Pretty(..))
 > import Text.Regex.PDeriv.Common (Range(..), Letter, PosEpsilon(..), Simplifiable(..), my_hash, my_lookup, GFlag(..), nub2, preBinder, mainBinder, subBinder)
@@ -200,41 +195,6 @@ collection function for binder
 >                patMatchesIntStatePdPat0 cnt'  pdStateTable  w eps'
 
 
-> parMap :: (a -> b) -> [a] -> Eval [b]
-> parMap f [] = return []
-> parMap f (a:as) = do
->    b <- rpar (f a)
->    bs <- parMap f as
->    return (b:bs)
-
-> deep :: NFData a => a -> a
-> deep a = deepseq a a
-
-
-> patMatchesIntStatePdPat0' :: Int -> PdPat0Table -> Word -> [(Int,[Binder -> Binder])] -> [(Int,[Binder -> Binder])]
-> patMatchesIntStatePdPat0' cnt pdStateTable  w' eps =
->     case {-# SCC "uncons" #-} S.uncons w' of 
->       Nothing -> eps 
->       Just (l,w) -> 
->           {-
->           let 
->               eps_ = l `seq` cnt `seq` {-# SCC "listcompred" #-} concatMap (\ep -> lookupPdPat0' pdStateTable ep (l,cnt)) eps
->                      -- if length eps == 1 then {-# SCC "listcompred" #-} concatMap (\ep -> lookupPdPat0' pdStateTable ep (l,cnt)) eps
->                      -- else {-# SCC "listcompred" #-} concat $! runEval $ parMap (\ep -> lookupPdPat0' pdStateTable ep (l,cnt)) eps
->               eps' = -- eps_ `seq`
->                      nub2 eps_
->               cnt' = cnt + 1
->           in   cnt' `par` {- pdStateTable `seq` -} w `seq` 
->                eps' `seq` 
->                patMatchesIntStatePdPat0' cnt' pdStateTable  w eps'
->           -}
->           runEval $ do 
->           { cnt' <- Control.Parallel.Strategies.rpar (cnt + 1) 
->           ; mapped <- parList Control.Parallel.Strategies.rpar $ map (\ep -> lookupPdPat0' pdStateTable ep (l,cnt)) eps                  
->           ; eps' <- Control.Parallel.Strategies.rseq $ nub2 $ concat mapped
->           ; return $ patMatchesIntStatePdPat0' cnt' pdStateTable  w eps'
->           }  
->           
 
 
 
@@ -299,15 +259,15 @@ Compilation
 > patMatchIntStateCompiled (pdStateTable,sfinal,b) w = 
 >   let
 >     s = 0 
->     -- allbinders' = b `seq` s `seq` pdStateTable `seq` (patMatchesIntStatePdPat0 0 pdStateTable w [(s,b)]) 
->     -- allbinders = allbinders' `seq` map snd (filter (\(i,_) -> i `elem` sfinal) allbinders' )
->     all_func' = s `seq` pdStateTable `seq` (patMatchesIntStatePdPat0' 0 pdStateTable w [(s,[])])
->     all_func = all_func' `seq` map snd (filter (\(i,_) -> i `elem` sfinal) all_func' ) 
->   in -- map (collectPatMatchFromBinder w) allbinders
->      all_func `seq` 
+>     allbinders' = b `seq` s `seq` pdStateTable `seq` (patMatchesIntStatePdPat0 0 pdStateTable w [(s,b)]) 
+>     allbinders = allbinders' `seq` map snd (filter (\(i,_) -> i `elem` sfinal) allbinders' )
+>     -- all_func' = s `seq` pdStateTable `seq` (patMatchesIntStatePdPat0' 0 pdStateTable w [(s,[])])
+>     -- all_func = all_func' `seq` map snd (filter (\(i,_) -> i `elem` sfinal) all_func' ) 
+>   in map (collectPatMatchFromBinder w) allbinders
+>      {- all_func `seq` 
 >      map (\fs -> let fs' = reverse fs
 >                  in fs' `seq` collectPatMatchFromBinder w (applyAll fs' b)) all_func 
-
+>      -}
 > applyAll :: [ Binder -> Binder ] -> Binder -> Binder
 > -- applyAll _  b = b -- fixme
 > applyAll [] b = b
