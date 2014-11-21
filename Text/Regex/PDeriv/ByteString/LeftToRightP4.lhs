@@ -140,9 +140,9 @@ the "partial derivative" operations among integer states + binders
 >       { Just pairs -> 
 >             binder `seq` -- x `seq`
 >         -- {-# SCC "pair" #-} [ binder' `seq`  (j, binder' ) | (j, op) <- {-# SCC "pair_pair" #-} pairs, let binder' = {-# SCC "pair_binder" #-} op x binder ]
->         {-# SCC "pair" #-} map (\ (j,op) -> let binder' = {-# SCC "pair_binder" #-} op x binder  
->                                             in binder' `seq`  
->                                 {-# SCC "pair_pair" #-} (j, binder' ) ) pairs  
+>         {-# SCC "pair" #-} (map (\ (j,op) -> let binder' = {-# SCC "pair_binder" #-} op x binder  
+>                                              in binder' `seq`  
+>                                 {-# SCC "pair_pair" #-} (j, binder' ) ) pairs) `using` parList Control.Parallel.Strategies.rseq -- chunk?
 >       ; Nothing -> [] 
 >       }
 
@@ -182,16 +182,38 @@ collection function for binder
 >           f w (r:_) = rg_collect w r
 > -}
 
+
+> instance NFData Range where
+>   rnf (Range x y) = rnf x `seq` rnf y `seq` ()
+
 > patMatchesIntStatePdPat0 :: Int -> PdPat0Table -> Word -> [(Int,Binder)] -> [(Int,Binder)]
-> patMatchesIntStatePdPat0 cnt pdStateTable  w' eps =
+> patMatchesIntStatePdPat0 cnt pdStateTable w' eps = runEval $ patMatchesIntStatePdPat1 cnt pdStateTable w' eps
+
+> patMatchesIntStatePdPat1 cnt pdStateTable  w' [] = return []
+> patMatchesIntStatePdPat1 cnt pdStateTable  w' eps =
 >     case {-# SCC "uncons" #-} S.uncons w' of 
->       Nothing -> eps 
->       Just (l,w) -> 
->           runEval $ do 
->           { cnt' <- Control.Parallel.Strategies.rpar (cnt + 1) 
->           ; mapped <- parList Control.Parallel.Strategies.rseq $ map (\ep -> lookupPdPat0 pdStateTable ep (l,cnt)) eps                  
->           ; eps' <- Control.Parallel.Strategies.rseq $ nub2 $ concat mapped
->           ; return $ patMatchesIntStatePdPat0 cnt' pdStateTable  w eps'
+>       Nothing -> return eps 
+>       Just (l,w) -> {-
+>          case eps of 
+>           { (x:xs@(_:_)) -> do 
+>             { ys   <- parList Control.Parallel.Strategies.rseq $ map (\ep -> lookupPdPat0 pdStateTable ep (l,cnt)) xs
+>             ; y    <- rseq $ lookupPdPat0 pdStateTable x (l,cnt)
+>             ; cnt' <- rseq (cnt + 1)
+>             ; eps' <- ys `seq` y `seq` rseq $ nub2 $ y ++ (concat ys)
+>             ; eps' `seq` patMatchesIntStatePdPat1 cnt' pdStateTable  w eps'
+>             }
+>           ; [x] -> do
+>             { y    <- rseq $ lookupPdPat0 pdStateTable x (l,cnt)
+>             ; cnt' <- rseq (cnt + 1)
+>             ; let eps' = y
+>             ; eps' `seq` patMatchesIntStatePdPat1 cnt' pdStateTable  w eps'
+>             }
+>           } -}
+>           do
+>           { mapped <- {- parList Control.Parallel.Strategies.rseq $ -} rseq $ map (\ep -> lookupPdPat0 pdStateTable ep (l,cnt)) eps                  
+>           ; cnt' <- rseq (cnt + 1) 
+>           ; eps' <- mapped `seq` rseq $ nub2 $ concat mapped
+>           ; eps' `seq` patMatchesIntStatePdPat1 cnt' pdStateTable  w eps'
 >           }  
 >           
 

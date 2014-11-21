@@ -180,6 +180,7 @@ collection function for binder
 > -}
 
 > patMatchesIntStatePdPat0 :: Int -> PdPat0Table -> Word -> [(Int,Binder)] -> [(Int,Binder)]
+> -- patMatchesIntStatePdPat0 cnt pdStateTable  w' [] = [] -- optimization: fail early
 > patMatchesIntStatePdPat0 cnt pdStateTable  w' eps =
 >     case {-# SCC "uncons" #-} S.uncons w' of 
 >       Nothing -> eps 

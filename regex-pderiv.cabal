@@ -31,6 +31,8 @@ library
                          Text.Regex.PDeriv.ByteString.LeftToRightP3
                          Text.Regex.PDeriv.ByteString.LeftToRightP4
                          Text.Regex.PDeriv.ByteString.LeftToRightP5
+                         Text.Regex.PDeriv.ByteString.LeftToRightP6
+                         Text.Regex.PDeriv.ByteString.LeftToRightP7
                          Text.Regex.PDeriv.ByteString.LeftToRightD
                          Text.Regex.PDeriv.ByteString.Posix
                          Text.Regex.PDeriv.String
