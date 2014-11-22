@@ -31,11 +31,12 @@ result: no improvement, most of the sparks are GC'ed
 > import qualified Data.IntMap as IM
 > import qualified Data.ByteString.Char8 as S
 > import Control.DeepSeq
-> import Control.Seq as Seq
+> -- import Control.Seq as Seq
 
 > import System.IO.Unsafe (unsafePerformIO)
 
 > import Text.Regex.Base(RegexOptions(..))
+
 
 > import Control.Parallel.Strategies hiding (parMap)
 > import Text.Regex.PDeriv.RE
@@ -182,10 +183,14 @@ collection function for binder
 >           f w (r:_) = rg_collect w r
 > -}
 
+> instance NFData Range where
+>   rnf (Range x y) = rnf x `seq` rnf y `seq` ()
+
+
 > patMatchesIntStatePdPat0 :: Int -> PdPat0Table -> Word -> [(Int,Binder)] -> [(Int,Binder)]
 > patMatchesIntStatePdPat0 cnt pdStateTable  w' eps 
 >   | length eps > 1 && S.length w' > steps = 
->       let epss = runEval $ parMap (\ep -> patMatchesIntStatePdPat0Pace steps cnt pdStateTable w' [ep]) eps
+>       let epss = map (\ep -> patMatchesIntStatePdPat0Pace steps cnt pdStateTable w' [ep]) eps `using` (parList rdeepseq)
 >           eps' = nub2 $ concat $ {- deep -}  epss
 >           cnt' = cnt + steps
 >       in cnt' `seq` {- pdStateTable `seq` -} 
@@ -206,7 +211,7 @@ collection function for binder
 >                patMatchesIntStatePdPat0 cnt'  pdStateTable  w eps'
 
 
-> steps = 1000
+> steps = 50000
 
 
 > deep :: NFData a => a -> a

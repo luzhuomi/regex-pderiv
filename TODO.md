@@ -117,3 +117,111 @@ SPARKS: 34788298 (152093 converted, 0 overflowed, 0 dud, 34469817 GC'd, 166388 f
 
 5. vertically split the task into 3 actors, each actors in charge of one NFA state, this will distribute the lookup and the duplicate steps. However this has a potential blow up of the number of actors. We haven't tried to implement this approach yet.
 
+
+
+LATEST,
+
+In LeftToRightP4, we fixed the problem of huge GC time. The problem
+was contributed by the use of list of Binder update functions. Hence
+we adopt a more aggressive strategy, the Binders are updated along the
+transitions take place. Cf patMatchesIntStatePdPat0 vs
+patMatchesIntStatePdPat0'. In addition, we move the par to the
+lookupPdPat0 where the "pairing" operation take place. The "pairing"
+operation pairs up the output NFA state with the resulting Binder environment.
+
+Now the bottle neck is gone, however there is still no speed up on e.g.
+
+matching ABABABAB... with "^(A|B)*(AB)*$"
+
+RTS reports
+
+SIT-NYPs-MBP-2:par_example luzm$ time ./Eg1P4 +RTS -s -N2 -g1 -lf > /dev/null
+   5,923,085,856 bytes allocated in the heap
+         420,648 bytes copied during GC
+          69,920 bytes maximum residency (3 sample(s))
+          42,440 bytes maximum slop
+               3 MB total memory in use (0 MB lost due to fragmentation)
+
+                                    Tot time (elapsed)  Avg pause  Max pause
+  Gen  0     10424 colls,     0 par    0.34s    0.43s     0.0000s    0.0054s
+  Gen  1         3 colls,     0 par    0.00s    0.01s     0.0023s    0.0065s
+
+  TASKS: 4 (1 bound, 3 peak workers (3 total), using -N2)
+
+  SPARKS: 5000004 (719374 converted, 0 overflowed, 0 dud, 3827985 GC'd, 452645 fizzled)
+
+  INIT    time    0.00s  (  0.05s elapsed)
+  MUT     time    2.21s  (  2.10s elapsed)
+  GC      time    0.34s  (  0.44s elapsed)
+  EXIT    time    0.00s  (  0.00s elapsed)
+  Total   time    2.55s  (  2.58s elapsed)
+
+  Alloc rate    2,683,795,581 bytes per MUT second
+
+  Productivity  86.5% of total user, 85.6% of total elapsed
+
+gc_alloc_block_sync: 0
+whitehole_spin: 0
+gen[0].sync: 0
+gen[1].sync: 0
+
+real	0m2.752s
+user	0m2.554s
+sys	0m0.323s
+
+
+Threadscope shows
+
+uneven spark task allocation, i.e. the main thread is still taking a
+long time
+
+In LeftToRightP6, we run the NFA transition in parallel for N steps if
+there are more than one source states. After the N steps of parallel
+executes, the states are merged. This shows that we have more
+converted sparks and no GC sparks. There are still some frizzle
+sparks.
+
+It is almost the same as the version w/o parallel execution, and
+faster than LeftToRightP4
+
+
+IT-NYPs-MBP-2:par_example luzm$ time ./Eg1P6 +RTS -s -N2   | less
+
+real	0m6.665s
+user	0m2.040s
+sys	0m0.174s
+SIT-NYPs-MBP-2:par_example luzm$ time ./Eg1P6 +RTS -s -N2  > /dev/null
+   7,204,042,624 bytes allocated in the heap
+      23,411,696 bytes copied during GC
+          70,488 bytes maximum residency (4 sample(s))
+          43,088 bytes maximum slop
+               3 MB total memory in use (0 MB lost due to fragmentation)
+
+                                    Tot time (elapsed)  Avg pause  Max pause
+  Gen  0     10512 colls, 10512 par    0.22s    0.13s     0.0000s    0.0003s
+  Gen  1         4 colls,     3 par    0.00s    0.00s     0.0002s    0.0003s
+
+  Parallel GC work balance: 5.75% (serial 0%, perfect 100%)
+
+  TASKS: 4 (1 bound, 3 peak workers (3 total), using -N2)
+
+  SPARKS: 80 (40 converted, 0 overflowed, 0 dud, 0 GC'd, 40 fizzled)
+
+  INIT    time    0.00s  (  0.00s elapsed)
+  MUT     time    1.76s  (  1.40s elapsed)
+  GC      time    0.22s  (  0.13s elapsed)
+  EXIT    time    0.00s  (  0.00s elapsed)
+  Total   time    1.99s  (  1.53s elapsed)
+
+  Alloc rate    4,088,344,158 bytes per MUT second
+
+  Productivity  88.7% of total user, 115.2% of total elapsed
+
+gc_alloc_block_sync: 3174
+whitehole_spin: 0
+gen[0].sync: 0
+gen[1].sync: 0
+
+real	0m1.539s
+user	0m1.989s
+sys	0m0.154s

@@ -125,6 +125,10 @@ Some helper functions used in buildPdPat0Table
 >         in {- dict' `seq` max_id' `seq` -} builder sig all_sofar_states acc_delta_next new_states dict' max_id' 
 
 
+> fib 0 = 1
+> fib 1 = 1
+> fib n = fib (n-1) + fib (n-2)
+
 
 the "partial derivative" operations among integer states + binders
 
@@ -142,7 +146,7 @@ the "partial derivative" operations among integer states + binders
 >         -- {-# SCC "pair" #-} [ binder' `seq`  (j, binder' ) | (j, op) <- {-# SCC "pair_pair" #-} pairs, let binder' = {-# SCC "pair_binder" #-} op x binder ]
 >         {-# SCC "pair" #-} (map (\ (j,op) -> let binder' = {-# SCC "pair_binder" #-} op x binder  
 >                                              in binder' `seq`  
->                                 {-# SCC "pair_pair" #-} (j, binder' ) ) pairs) `using` parList Control.Parallel.Strategies.rseq -- chunk?
+>                                 {-# SCC "pair_pair" #-} (j {- + fib 15 - fib 15-} , binder' ) ) pairs) `using` parList (evalTuple2 rseq rdeepseq)-- chunk?
 >       ; Nothing -> [] 
 >       }
 
