@@ -146,11 +146,7 @@ the "partial derivative" operations among integer states + binders
 >         -- {-# SCC "pair" #-} [ binder' `seq`  (j, binder' ) | (j, op) <- {-# SCC "pair_pair" #-} pairs, let binder' = {-# SCC "pair_binder" #-} op x binder ]
 >         {-# SCC "pair" #-} (map (\ (j,op) -> let binder' = {-# SCC "pair_binder" #-} op x binder  
 >                                              in binder' `seq`  
-<<<<<<< HEAD
 >                                 {-# SCC "pair_pair" #-} (j, binder' ) ) pairs) `using` parList (evalTuple2 rseq rseq) -- Control.Parallel.Strategies.rseq -- chunk?
-=======
->                                 {-# SCC "pair_pair" #-} (j {- + fib 15 - fib 15-} , binder' ) ) pairs) `using` parList (evalTuple2 rseq rdeepseq)-- chunk?
->>>>>>> 0c0b3ad91ee8971ae1cbfc29b135796310661bd2
 >       ; Nothing -> [] 
 >       }
 
