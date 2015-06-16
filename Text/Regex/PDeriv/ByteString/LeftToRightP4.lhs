@@ -142,7 +142,7 @@ the "partial derivative" operations among integer states + binders
 >         -- {-# SCC "pair" #-} [ binder' `seq`  (j, binder' ) | (j, op) <- {-# SCC "pair_pair" #-} pairs, let binder' = {-# SCC "pair_binder" #-} op x binder ]
 >         {-# SCC "pair" #-} (map (\ (j,op) -> let binder' = {-# SCC "pair_binder" #-} op x binder  
 >                                              in binder' `seq`  
->                                 {-# SCC "pair_pair" #-} (j, binder' ) ) pairs) `using` parList Control.Parallel.Strategies.rseq -- chunk?
+>                                 {-# SCC "pair_pair" #-} (j, binder' ) ) pairs) `using` parList (evalTuple2 rseq rseq) -- Control.Parallel.Strategies.rseq -- chunk?
 >       ; Nothing -> [] 
 >       }
 
@@ -212,7 +212,7 @@ collection function for binder
 >           do
 >           { mapped <- {- parList Control.Parallel.Strategies.rseq $ -} rseq $ map (\ep -> lookupPdPat0 pdStateTable ep (l,cnt)) eps                  
 >           ; cnt' <- rseq (cnt + 1) 
->           ; eps' <- mapped `seq` rseq $ nub2 $ concat mapped
+>           ; eps' <- mapped `seq` rseq $ {- nub2 -} take 2 $ concat mapped
 >           ; eps' `seq` patMatchesIntStatePdPat1 cnt' pdStateTable  w eps'
 >           }  
 >           
