@@ -24,6 +24,7 @@ outcome: too many sparks, 90% of which are GC'ed, no improvement
 >     , regexec
 >     ) where 
 
+> import Prelude hiding (Word)
 > import Data.List 
 > import Data.Char (ord)
 > -- import GHC.Int

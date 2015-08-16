@@ -26,6 +26,7 @@ par run the count + 1, not effective
 >     , regexec
 >     ) where 
 
+> import Prelude hiding (Word)
 > import Data.List 
 > import Data.Char (ord)
 > -- import GHC.Int

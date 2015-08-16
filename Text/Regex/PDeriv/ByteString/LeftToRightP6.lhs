@@ -25,6 +25,7 @@ result: no improvement, most of the sparks are GC'ed
 >     , regexec
 >     ) where 
 
+> import Prelude hiding (Word)
 > import Data.List 
 > import Data.Char (ord)
 > -- import GHC.Int

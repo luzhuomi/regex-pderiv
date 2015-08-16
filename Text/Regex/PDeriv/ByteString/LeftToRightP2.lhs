@@ -22,6 +22,7 @@ SPARKS: 634836 (13585 converted, 0 overflowed, 0 dud, 605166 GC'd, 16085 fizzled
 >     , regexec
 >     ) where 
 
+> import Prelude hiding (Word)
 > import Data.List 
 > import Data.Char (ord)
 > -- import GHC.Int

@@ -26,6 +26,7 @@ use max only N of sparks when there are more than one source states and never me
 >     , regexec
 >     ) where 
 
+> import Prelude hiding (Word)
 > import Data.List 
 > import Data.Char (ord)
 > -- import GHC.Int

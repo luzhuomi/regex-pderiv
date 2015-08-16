@@ -23,6 +23,7 @@ eliminating the list of env update functions, by applying them on the flight
 >     , regexec
 >     ) where 
 
+> import Prelude hiding (Word)
 > import Data.List 
 > import Data.Char (ord)
 > -- import GHC.Int
