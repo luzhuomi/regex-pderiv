@@ -1,5 +1,5 @@
 Name:                   regex-pderiv
-Version:                0.1.4
+Version:                0.2.0
 License:                BSD3
 License-File:           LICENSE
 Copyright:              Copyright (c) 2010-2012, Kenny Zhuo Ming Lu and Martin Sulzmann
@@ -26,13 +26,13 @@ library
                          Text.Regex.PDeriv.ByteString.RightToLeft
                          Text.Regex.PDeriv.ByteString.LeftToRight
                          Text.Regex.PDeriv.ByteString.LeftToRightS
-                         Text.Regex.PDeriv.ByteString.LeftToRightP
-                         Text.Regex.PDeriv.ByteString.LeftToRightP2
-                         Text.Regex.PDeriv.ByteString.LeftToRightP3
-                         Text.Regex.PDeriv.ByteString.LeftToRightP4
-                         Text.Regex.PDeriv.ByteString.LeftToRightP5
-                         Text.Regex.PDeriv.ByteString.LeftToRightP6
-                         Text.Regex.PDeriv.ByteString.LeftToRightP7
+                         -- Text.Regex.PDeriv.ByteString.LeftToRightP
+                         -- Text.Regex.PDeriv.ByteString.LeftToRightP2
+                         -- Text.Regex.PDeriv.ByteString.LeftToRightP3
+                         -- Text.Regex.PDeriv.ByteString.LeftToRightP4
+                         -- Text.Regex.PDeriv.ByteString.LeftToRightP5
+                         -- Text.Regex.PDeriv.ByteString.LeftToRightP6
+                         -- Text.Regex.PDeriv.ByteString.LeftToRightP7
                          Text.Regex.PDeriv.ByteString.LeftToRightD
                          Text.Regex.PDeriv.ByteString.Posix
                          Text.Regex.PDeriv.String
