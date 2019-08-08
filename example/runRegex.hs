@@ -1,12 +1,13 @@
 module Main where
 
-import qualified System.IO.UTF8
+-- import qualified System.IO.UTF8
 
-import Text.Regex.PDeriv.ByteString.RightToLeft
-
+import Text.Regex.PDeriv.ByteString.LeftToRight
+import Text.Regex.PDeriv.Parse
 import qualified Data.ByteString.Char8 as S
 
-import System 
+import System.IO
+import System.Environment
 
 com p = 
     case compile defaultCompOpt defaultExecOpt p of

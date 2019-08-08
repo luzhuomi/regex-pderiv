@@ -7,24 +7,24 @@ import qualified Data.IntMap as IM
 import Data.Char
 
 class Key a where
-    hash :: a -> [Int]
+  hash :: a -> [Int]
 
 
 instance Key Int where
-    hash i = [i]
+  hash i = [i]
 
 instance Key Char where
-    hash c = [(ord c)]
+  hash c = [(ord c)]
 
 instance (Key a, Key b) => Key (a,b) where
-    hash (a,b) = hash a ++ hash b
+  hash (a,b) = hash a ++ hash b
 
 instance (Key a, Key b, Key c) => Key (a,b,c) where
-    hash (a,b,c) = hash a ++ hash b ++ hash c
+  hash (a,b,c) = hash a ++ hash b ++ hash c
 
 
 instance Key a => Key [a] where
-    hash as = concatMap hash as
+  hash as = concatMap hash as
 
 
 -- an immutable dictionary
@@ -57,16 +57,16 @@ lookup key (Dictionary trie) =
     let key_hash = hash key
     in key_hash `seq` 
        case lookupTrie key_hash trie of
-        Just (Trie (x:_) _) -> Just x
-	_		    -> Nothing
+         Just (Trie (x:_) _) -> Just x
+         _                   -> Nothing
 
 lookupAll :: Key k => k -> Dictionary a -> [a]
 lookupAll key (Dictionary trie) = 
     let key_hash = hash key
     in key_hash `seq` 
        case lookupTrie key_hash trie of
-        Just (Trie xs _) -> xs
-	_		 -> [] 
+         Just (Trie xs _) -> xs
+         _                -> [] 
 
 
 
