@@ -1,5 +1,5 @@
 Name:                   regex-pderiv
-Version:                0.2.0
+Version:                0.2.1
 License:                BSD3
 License-File:           LICENSE
 Copyright:              Copyright (c) 2010-2012, Kenny Zhuo Ming Lu and Martin Sulzmann
@@ -16,6 +16,7 @@ Build-Type:             Simple
 Cabal-Version:          >= 1.8
 
 flag base4
+
 
 library 
   Build-Depends:        parsec, mtl, containers, bytestring, deepseq 
@@ -55,13 +56,16 @@ library
   Extensions:             GADTs, MultiParamTypeClasses, FunctionalDependencies, FlexibleInstances, TypeSynonymInstances, FlexibleContexts
   GHC-Options:            -threaded -funbox-strict-fields
   GHC-Prof-Options:       -auto-all
-
+  hs-source-dirs:  src
 
 test-suite test_pderiv
   main-is:         BitTest.hs
   type:            exitcode-stdio-1.0
   Build-Depends:        parsec, mtl, containers, bytestring, deepseq 
   Build-Depends:	parallel, regex-base
-  -- Build-Depends:	pderiv-regex
   Build-Depends:         base >= 4.0 && < 5.0, ghc-prim
-  hs-source-dirs:   test, Text
+  Extensions:             GADTs, MultiParamTypeClasses, FunctionalDependencies, FlexibleInstances, TypeSynonymInstances, FlexibleContexts
+  GHC-Options:            -threaded -funbox-strict-fields
+  GHC-Prof-Options:       -auto-all  
+  hs-source-dirs:  test, src
+     

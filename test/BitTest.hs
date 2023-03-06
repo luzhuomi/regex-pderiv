@@ -9,4 +9,6 @@ import Text.Regex.PDeriv.Common
 
 main = do
     let r4 = strip p4
-    exitFailure
+        trans = buildTrans r4
+        regex = buildRegex p4
+    putStrLn (show $ parseRegex regex "ABAAC" == parseBX trans r4 "ABAAC")
