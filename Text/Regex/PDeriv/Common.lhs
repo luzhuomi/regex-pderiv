@@ -71,7 +71,7 @@ the lookup function
 > -- | The greediness flag
 > data GFlag = Greedy    -- ^ greedy
 >            | NotGreedy -- ^ not greedy
->              deriving Eq
+>              deriving (Eq, Ord)
 
 > instance Show GFlag where
 >     show Greedy = ""

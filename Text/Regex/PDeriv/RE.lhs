@@ -21,6 +21,7 @@
 >  | Star RE GFlag -- ^ a kleene's star exp 'r*'
 >  | Any           -- ^ .
 >  | Not [Char]    -- ^ excluding characters e.g. [^abc]
+>  deriving Ord
 
 > -- | the eq instance
 > instance Eq RE where
