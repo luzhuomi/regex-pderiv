@@ -1,6 +1,6 @@
 module Text.Regex.PDeriv.BitCode.Bit
 
-import Text.Regex.PDeriv.IntPattern
+import Text.Regex.PDeriv.BitCode.ParseTree 
 
 type Bits = [Int]
 
@@ -21,25 +21,13 @@ decode' (Star r) (0:bs) = let (u, bs') = decode' r bs
                           in (List (u:us), bs'')
 decode' r bs = error $ (show r) ++ " " ++ (show bs)
 
-decode :: Pat -> Bits -> U
+decode :: RE -> Bits -> U
 decode r bs = case decode' r bs of
        (u, []) -> u
        (_, _ ) -> error "decode failed with non empty bits"
 
 
-type Env = [(Int,Word)]
 
-
-decodePat :: Pat -> Bits -> Binder
-decodePat p bs = case decodePat' p bs of
-  (bd, []) -> bd
-  (_,  _ ) -> error "decodePat failed with non empty bits"
-
-decodePat' :: Pat -> Bits -> (Binder, Bits)
-decodePat' (PVar i rg p) bs = case decodePat' p bs of
-  (bd, bs) -> let rg' = mergeRanges bd
-              in IM.update (\rs -> Just $ rg':rs) i bd
-decodePat' (PE r) bs = 
 
 -- forward bits construction 
 pderivBC :: RE -> Char -> [(RE, Bits)]

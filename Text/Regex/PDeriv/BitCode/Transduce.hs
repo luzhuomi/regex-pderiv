@@ -4,3 +4,8 @@
 module Text.Regex.PDeriv.BitCode
 
 
+import Text.Regex.PDeriv.BitCode.Bit
+
+
+
+newtype Regex = Regex ()

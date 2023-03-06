@@ -13,12 +13,13 @@ Description:            Regex algorithm implementation using partial derivatives
 Category:               Text
 Tested-With:            GHC
 Build-Type:             Simple
-Cabal-Version:          >= 1.2.3
+Cabal-Version:          >= 1.8
 
 flag base4
 
 library 
-  Build-Depends:        regex-base >= 0.93.1, parsec, mtl, containers, bytestring, deepseq, parallel
+  Build-Depends:        parsec, mtl, containers, bytestring, deepseq 
+  Build-Depends:	parallel, regex-base
   -- Build-Depends:	bitset
   Build-Depends:         base >= 4.0 && < 5.0, ghc-prim
   Exposed-Modules:       Text.Regex.PDeriv.ByteString
