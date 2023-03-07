@@ -9,6 +9,7 @@ import Text.Regex.PDeriv.IntPattern
 data U where
   NilU :: U
   EmptyU :: U
+  AnyU :: Char -> U
   Letter :: Char -> U
   LeftU :: U -> U
   RightU :: U -> U
@@ -22,7 +23,8 @@ type W = S.ByteString
 flatten :: U -> W
 flatten NilU = error "flatten: trying to flatten a phi into a word."
 flatten EmptyU = S.empty
-flatten (Letter c) = S.singleton  c
+flatten (Letter c) = S.singleton c
+flatten (AnyU c)= S.singleton c
 flatten (LeftU u) = flatten u
 flatten (RightU u) = flatten u
 flatten (Pair (u,v)) = flatten u `S.append` flatten v
