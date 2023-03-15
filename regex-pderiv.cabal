@@ -2,7 +2,7 @@ Name:                   regex-pderiv
 Version:                0.2.1
 License:                BSD3
 License-File:           LICENSE
-Copyright:              Copyright (c) 2010-2012, Kenny Zhuo Ming Lu and Martin Sulzmann
+Copyright:              Copyright (c) 2010-2023, Kenny Zhuo Ming Lu and Martin Sulzmann
 Author:                 Kenny Zhuo Ming Lu and Martin Sulzmann
 Maintainer:             luzhuomi@gmail.com, martin.sulzmann@gmail.com
 Stability:              Beta
@@ -54,7 +54,7 @@ library
                          Text.Regex.PDeriv.Dictionary
   Buildable:              True
   Extensions:             GADTs, MultiParamTypeClasses, FunctionalDependencies, FlexibleInstances, TypeSynonymInstances, FlexibleContexts
-  GHC-Options:            -threaded -funbox-strict-fields
+  GHC-Options:            -funbox-strict-fields
   GHC-Prof-Options:       -auto-all
   hs-source-dirs:  src
 
