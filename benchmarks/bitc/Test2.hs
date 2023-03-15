@@ -1,5 +1,7 @@
 module Main where
 
+-- Two-Pass Greedy Regular Expression Parsing  Fig 4 (c)
+
 import qualified Data.ByteString.Char8 as S
 import Data.Maybe
 import Text.Regex.PDeriv.BitCode.Transduce
