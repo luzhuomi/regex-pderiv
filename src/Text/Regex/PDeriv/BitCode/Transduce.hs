@@ -7,7 +7,7 @@ module Text.Regex.PDeriv.BitCode.Transduce where
 import Text.Regex.PDeriv.BitCode.Bit
 import Text.Regex.PDeriv.BitCode.ParseTree
 import Text.Regex.PDeriv.Common (Range(..), Letter, PosEpsilon(..), Simplifiable(..), my_hash, my_lookup, GFlag(..), nub2, preBinder, mainBinder, subBinder)
-import Text.Regex.PDeriv.IntPattern
+import Text.Regex.PDeriv.IntPattern hiding (nub2)
 import Text.Regex.PDeriv.RE
 import Text.Regex.PDeriv.Parse
 
@@ -126,7 +126,7 @@ parseRegexBS (Regex (itrans,init_istate,finals, _)) cs = case go [(init_istate,[
                                      { Just emptybits -> [bc ++ emptybits]
                                      ; Nothing -> [] }) rbc
             ; Just (x,xs)-> let tbc :: [(Int,Bits)]
-                                tbc = concatMap g rbc
+                                tbc = nub2 $ concatMap g rbc
                                 g :: (Int, Bits) -> [(Int,Bits)]
                                 g (r, bc) = case IM.lookup (my_hash r x) itrans of
                                             { Nothing -> []
