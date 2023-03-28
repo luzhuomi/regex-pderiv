@@ -16,6 +16,7 @@ import Data.List
 import qualified Data.Map as DM
 import qualified Data.IntMap as IM
 import qualified Data.ByteString.Char8 as S
+import Debug.Trace
 
 -- mapping (src, l) to [(dst, bits_to_be_emitted)]
 type Trans = DM.Map (RE, Char) [(RE, Bits)]
@@ -24,10 +25,30 @@ buildTrans :: RE -> Trans
 buildTrans r =
            let sig = sigmaRE r
                init_states = [r]
-               (all_states, trans) = buildFix init_states DM.empty sig
+               (all_states, trans) = buildFix [] init_states DM.empty sig -- buildFix init_states DM.empty sig
            in trans
 
+-- pre cond 1  allStatesSoFar \insect newStates = \emptyset
+--          2  dom(dom(currTrans)) \in allStatesFoFar
+buildFix :: [RE] -> [RE] -> Trans -> [Char] -> ([RE], Trans)
+buildFix allStatesSoFar [] currTrans sig = (allStatesSoFar, currTrans)
+buildFix allStatesSoFar newStates currTrans sig =
+  let newDeltaBits = concat $ do
+        r <- newStates
+        l <- sig
+        let tfs = pderivBC r l
+            tfdelta = map (\(t,bc) -> (r,l,t,bc)) tfs
+        return (filter (\(r,l,t,bc) -> not ((r,l) `DM.member` currTrans)) tfdelta)
+      allStatesNext = allStatesSoFar ++ newStates
+      newStatesNext = nub $ sort (map (\(r,l,t,bc) -> t) newDeltaBits)
+      nextTrans     = foldl (\ trans (r,l,t,bc) ->
+                                if (r,l) `DM.member` trans
+                                then DM.update (\rxs -> Just $ rxs ++ [(t,bc)]) (r,l) trans
+                                else DM.insert (r,l) [(t,bc)] trans ) currTrans newDeltaBits
+  in buildFix allStatesNext newStatesNext nextTrans sig
 
+
+{-
 buildFix :: [RE] -> Trans -> [Char] -> ([RE], Trans)
 buildFix allStatesSoFar currTrans sig = 
          let newDeltaBits = concat $ do
@@ -45,6 +66,7 @@ buildFix allStatesSoFar currTrans sig =
                                              else DM.insert (r,l) [(t,bc)] trans ) currTrans newDeltaBits
                  in buildFix nextStatesSoFar nextTrans sig
 
+-}
 
 parseBX :: Trans -> RE -> [Char] -> Maybe Bits
 parseBX trans r cs = case go [(r,[])] cs of
@@ -80,7 +102,7 @@ buildRegex p =
             let r = strip p
                 sig = sigmaRE r
                 init_states = [r]
-                (all_states, trans) = buildFix init_states DM.empty sig
+                (all_states, trans) = buildFix [] init_states DM.empty sig -- buildFix init_states DM.empty sig
                 all_states_and_ids = zip all_states [0..]
                 re2id = DM.fromList all_states_and_ids
                 id2re = DM.fromList (map (\ (x,y) -> (y,x)) all_states_and_ids)

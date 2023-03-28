@@ -16,7 +16,7 @@ main = defaultMain unitTests
 
 unitTests =
   testGroup
-    "Unit tests" [testBitCodeP4, testBitCodeP5, testBitCodeP6, testBitCodeP7]
+    "Unit tests" [testBitCodeParseRegex1, testBitCodeP4, testBitCodeP5, testBitCodeP6, testBitCodeP7]
 
 
 
@@ -70,6 +70,12 @@ digits_re = foldl' (\x y -> Choice x y Greedy) (L '0') (map L "12345789")
 p11 = PPair (PStar (PVar 1 [] (PE (Seq digits_re (Star digits_re Greedy)))) Greedy) (PPair (PStar (PVar 2 [] (PE (Seq digits_re (Star digits_re Greedy)))) Greedy) (PPair (PStar (PVar 3 [] (PE (Seq digits_re (Star digits_re Greedy)))) Greedy) (PStar (PVar 4 [] (PE (Seq digits_re (Star digits_re Greedy)))) Greedy)))
 
 input11 =  "1234567890123456789-"
+
+
+testBitCodeParseRegex1 = 
+    let r4 = strip p4
+        regex = buildRegex p4
+    in testCase "parseRegex should be the same as parseBX" $ assertEqual [] (parseRegex regex "ABAAC") (Just [0,0,1])
 
 testBitCodeP4 = 
     let r4 = strip p4
