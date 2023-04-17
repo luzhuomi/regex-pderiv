@@ -11,7 +11,7 @@ mkpat :: Int -> S.ByteString
 mkpat n = 
     let aqs = S.intercalate S.empty $ take n $ repeat (S.pack "(a?)")
         as = S.pack $ take n $ repeat 'a'
-    in (S.pack "^") `S.append` as `S.append` aqs `S.append` (S.pack "$")
+    in (S.pack "^") `S.append` aqs `S.append` as `S.append` (S.pack "$")
 
 
 
