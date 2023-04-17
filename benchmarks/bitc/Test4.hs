@@ -3,6 +3,7 @@ module Main where
 -- Two-Pass Greedy Regular Expression Parsing  Fig 5 (b)
 
 import System.Environment (getArgs)
+import Data.Time.Clock.System
 import qualified Data.ByteString.Char8 as S
 import Data.Maybe
 import Text.Regex.PDeriv.BitCode.Transduce
@@ -26,14 +27,19 @@ parseCompiled compiled s = case regexec compiled s of
 
 main :: IO ()
 main = do
-    [n] <- getArgs
-    f <- {-# SCC "myread" #-} S.readFile "./input.txt"
+    [n, fname] <- getArgs
+    f <- {-# SCC "myread" #-} S.readFile fname
+    t0 <- getSystemTime
     let ls = S.lines f
         pat = mkpat (read n)
         compiled = case compile pat of
             Left _ -> error " compilation failed . "
             Right r -> r
-        results = (map (parseCompiled compiled) ls)
-    {-# SCC "mywrite" #-} putStrLn $ show results
-    putStrLn $ show pat
+    putStrLn $ show $ numTrans compiled 
+    t1 <- compiled `seq` getSystemTime
+    putStrLn (show ((systemNanoseconds t1 - systemNanoseconds t0) `div` 1000) ++ " micro sec")
+    let results = (map (parseCompiled compiled) ls)
+    putStrLn $ show results
+    t2 <- getSystemTime
+    putStrLn (show ((systemNanoseconds t2 - systemNanoseconds t1) `div` 1000) ++ " micro sec")
     -- ; putStrLn $ show (length (filter isJust results))

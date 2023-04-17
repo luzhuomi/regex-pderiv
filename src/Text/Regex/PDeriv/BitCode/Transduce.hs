@@ -14,7 +14,7 @@ import Text.Regex.PDeriv.Parse
 
 import Data.List 
 import qualified Data.Map as DM
-import qualified Data.IntMap as IM
+import qualified Data.IntMap.Strict as IM
 import qualified Data.ByteString.Char8 as S
 import Debug.Trace
 
@@ -92,6 +92,9 @@ type Init = Int
 
 newtype Regex = Regex (ITrans, Init, Finals, Pat)
 
+
+numTrans :: Regex -> Int
+numTrans (Regex (ts,_,_,_)) = IM.size ts
 
 srcPat :: Regex -> Pat
 srcPat (Regex (_,_,_,p) ) = p
