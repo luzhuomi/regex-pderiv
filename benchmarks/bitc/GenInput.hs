@@ -15,7 +15,7 @@ main = do
 
                 withFile file WriteMode ( \hdl -> 
                     do {
-                        mapM_ (\_ -> hPutStr hdl str) [0..t]
+                        mapM_ (\_ -> hPutStr hdl str) [1..t]
                     }
                 ) 
             }

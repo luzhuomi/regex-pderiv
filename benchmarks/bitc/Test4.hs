@@ -35,4 +35,5 @@ main = do
             Right r -> r
         results = (map (parseCompiled compiled) ls)
     {-# SCC "mywrite" #-} putStrLn $ show results
+    putStrLn $ show pat
     -- ; putStrLn $ show (length (filter isJust results))
